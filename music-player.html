@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>🎵 Tamil Music Player</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      background-color: #f0f0f0;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #333;
+    }
+
+    audio {
+      width: 90%;
+      margin: 20px 0;
+    }
+
+    #song-name {
+      font-weight: bold;
+      margin-bottom: 10px;
+      color: #444;
+    }
+
+    input[type="file"] {
+      margin: 20px auto;
+    }
+
+    ul {
+      padding: 0;
+      list-style: none;
+      max-height: 200px;
+      overflow-y: auto;
+      margin: 10px auto;
+      width: 90%;
+      text-align: left;
+    }
+
+    li {
+      padding: 5px;
+      border-bottom: 1px solid #ccc;
+    }
+
+    li.playing {
+      background-color: #d0ffd0;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>🎧 My Mobile Music Player</h1>
+
+  <p id="song-name">No song selected</p>
+  <audio id="audio" controls></audio>
+
+  <input type="file" id="file-picker" accept="audio/*" multiple />
+
+  <ul id="playlist"></ul>
+
+  <script>
+    const audio = document.getElementById("audio");
+    const filePicker = document.getElementById("file-picker");
+    const playlistEl = document.getElementById("playlist");
+    const songNameEl = document.getElementById("song-name");
+
+    let playlist = [];
+    let currentIndex = 0;
+
+    filePicker.addEventListener("change", (event) => {
+      playlist = Array.from(event.target.files);
+      currentIndex = 0;
+      updatePlaylistDisplay();
+      playCurrentSong();
+    });
+
+    function playCurrentSong() {
+      const currentFile = playlist[currentIndex];
+      if (!currentFile) return;
+
+      const url = URL.createObjectURL(currentFile);
+      audio.src = url;
+      songNameEl.textContent = currentFile.name;
+      highlightCurrentSong();
+      audio.play();
+    }
+
+    function highlightCurrentSong() {
+      const items = document.querySelectorAll("#playlist li");
+      items.forEach((li, index) => {
+        li.classList.toggle("playing", index === currentIndex);
+      });
+    }
+
+    function updatePlaylistDisplay() {
+      playlistEl.innerHTML = "";
+      playlist.forEach((file, index) => {
+        const li = document.createElement("li");
+        li.textContent = file.name;
+        li.addEventListener("click", () => {
+          currentIndex = index;
+          playCurrentSong();
+        });
+        playlistEl.appendChild(li);
+      });
+    }
+
+    // Auto play next song
+    audio.addEventListener("ended", () => {
+      currentIndex++;
+      if (currentIndex < playlist.length) {
+        playCurrentSong();
+      } else {
+        songNameEl.textContent = "🎵 Playlist Ended";
+      }
+    });
+  </script>
+</body>
+</html>

@@ -33,7 +33,7 @@
             <div class="logo-section">
                 <div class="logo-placeholder">
                     <img src="./baba.png" alt="Baba">
-                </div>
+                </div> <br>
                 <div class="om-text">Om Shanthi</div>
             </div>
             <h1 class="app-title">Yogi</h1>
@@ -747,7 +747,7 @@
         let currentTrack = 0;
         let musicFiles = [];
         let isPlaying = false;
-        let isShuffling = false;
+        let isShuffling = true;
         let yogaStartTime = null;
         let yogaTimer = null;
         let currentSessionTime = 0;
@@ -933,14 +933,27 @@
 
         function nextTrack() {
             if (musicFiles.length === 0) return;
-            
-            if (isShuffling) {
-                currentTrack = Math.floor(Math.random() * musicFiles.length);
-            } else {
-                currentTrack = (currentTrack + 1) % musicFiles.length;
+
+            if (musicFiles.length === 1) {
+                // Only one song, replay it
+                audioPlayer.currentTime = 0;
+                audioPlayer.play();
+                return;
             }
-            
+
+            let nextIndex;
+
+            if (isShuffling) {
+                do {
+                    nextIndex = Math.floor(Math.random() * musicFiles.length);
+                } while (nextIndex === currentTrack);
+            } else {
+                nextIndex = (currentTrack + 1) % musicFiles.length;
+            }
+
+            currentTrack = nextIndex;
             loadTrack(currentTrack);
+
             if (isPlaying) {
                 audioPlayer.play().catch(e => {
                     console.error('Playback failed:', e);
@@ -949,6 +962,7 @@
                 });
             }
         }
+
 
         function prevTrack() {
             if (musicFiles.length === 0) return;

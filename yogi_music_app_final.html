@@ -32,8 +32,7 @@
         <header class="app-header">
             <div class="logo-section">
                 <div class="logo-placeholder">
-                    <!-- <i class="fas fa-om"></i> -->
-                     <img src="./baba.png" alt="Baba">
+                    <img src="./baba.png" alt="Baba">
                 </div>
                 <div class="om-text">Om Shanthi</div>
             </div>
@@ -89,10 +88,9 @@
         <div class="music-section">
             <h3><i class="fas fa-music"></i> Music Player</h3>
             <div class="music-controls">
-                <input type="file" id="musicFiles" multiple accept="audio/*" style="display: none;">
                 <button id="loadMusic" class="control-btn">
                     <i class="fas fa-folder-open"></i>
-                    <button onclick="openMusicPlayer()">🎵 Open Music Player</button>
+                    Load Music
                 </button>
                 <div class="music-info" id="musicInfo">
                     <div class="track-name" id="trackName">No music loaded</div>
@@ -757,6 +755,8 @@
         let presetTimer = null;
         let isPaused = false;
         let pausedTime = 0;
+        let audioContext = null;
+        let audioElementSource = null;
 
         // Audio element
         const audioPlayer = document.getElementById('audioPlayer');
@@ -768,8 +768,7 @@
             
             // Event listeners
             document.getElementById('enterApp').addEventListener('click', enterMainApp);
-            document.getElementById('loadMusic').addEventListener('click', () => document.getElementById('musicFiles').click());
-            document.getElementById('musicFiles').addEventListener('change', loadMusicFiles);
+            document.getElementById('loadMusic').addEventListener('click', loadMusicFromDevice);
             document.getElementById('playPause').addEventListener('click', togglePlayPause);
             document.getElementById('nextTrack').addEventListener('click', nextTrack);
             document.getElementById('prevTrack').addEventListener('click', prevTrack);
@@ -785,9 +784,35 @@
             audioPlayer.addEventListener('timeupdate', updateProgress);
             audioPlayer.addEventListener('ended', nextTrack);
 
+            // Initialize audio context for better mobile support
+            initAudioContext();
+
             // Request wake lock on load
             requestWakeLock();
         });
+
+        function initAudioContext() {
+            try {
+                // Create audio context for better mobile support
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                if (AudioContext) {
+                    audioContext = new AudioContext();
+                    
+                    // Create a media element source
+                    audioElementSource = audioContext.createMediaElementSource(audioPlayer);
+                    audioElementSource.connect(audioContext.destination);
+                    
+                    // Resume audio context on any user interaction
+                    document.addEventListener('click', function() {
+                        if (audioContext.state === 'suspended') {
+                            audioContext.resume();
+                        }
+                    }, { once: true });
+                }
+            } catch (e) {
+                console.error('Error initializing audio context:', e);
+            }
+        }
 
         async function requestWakeLock() {
             try {
@@ -826,14 +851,29 @@
             document.getElementById('mainScreen').classList.add('active');
         }
 
-        function loadMusicFiles(event) {
-            const files = Array.from(event.target.files);
-            musicFiles = files.filter(file => file.type.startsWith('audio/'));
+        function loadMusicFromDevice() {
+            // This is a simplified approach for mobile devices
+            // In a real app, you might want to use the File System Access API or a media picker
+            alert("Please use your device's file manager to select music files. The app will play them in sequence.");
             
-            if (musicFiles.length > 0) {
-                loadTrack(0);
-                document.getElementById('trackName').textContent = `${musicFiles.length} songs loaded`;
-            }
+            // Create a file input element
+            const fileInput = document.createElement('input');
+            fileInput.type = 'file';
+            fileInput.multiple = true;
+            fileInput.accept = 'audio/*';
+            
+            fileInput.onchange = (e) => {
+                const files = Array.from(e.target.files);
+                if (files.length > 0) {
+                    musicFiles = files.filter(file => file.type.startsWith('audio/'));
+                    if (musicFiles.length > 0) {
+                        loadTrack(0);
+                        document.getElementById('trackName').textContent = `${musicFiles.length} songs loaded`;
+                    }
+                }
+            };
+            
+            fileInput.click();
         }
 
         function loadTrack(trackIndex) {
@@ -842,9 +882,27 @@
             currentTrack = trackIndex;
             const file = musicFiles[currentTrack];
             const url = URL.createObjectURL(file);
-            audioPlayer.src = url;
             
-            document.getElementById('trackName').textContent = file.name.replace(/\.[^/.]+$/, "");
+            // Clean up previous URL if exists
+            if (audioPlayer.src) {
+                URL.revokeObjectURL(audioPlayer.src);
+            }
+            
+            audioPlayer.src = url;
+            audioPlayer.load();
+            
+            // Update track name (remove file extension)
+            const trackName = file.name.replace(/\.[^/.]+$/, "");
+            document.getElementById('trackName').textContent = trackName;
+            
+            // If player was playing, continue playing
+            if (isPlaying) {
+                audioPlayer.play().catch(e => {
+                    console.error('Playback failed:', e);
+                    isPlaying = false;
+                    document.getElementById('playPause').innerHTML = '<i class="fas fa-play"></i>';
+                });
+            }
         }
 
         function togglePlayPause() {
@@ -858,9 +916,18 @@
                 document.getElementById('playPause').innerHTML = '<i class="fas fa-play"></i>';
                 isPlaying = false;
             } else {
-                audioPlayer.play();
-                document.getElementById('playPause').innerHTML = '<i class="fas fa-pause"></i>';
-                isPlaying = true;
+                audioPlayer.play().then(() => {
+                    document.getElementById('playPause').innerHTML = '<i class="fas fa-pause"></i>';
+                    isPlaying = true;
+                    
+                    // Resume audio context if needed
+                    if (audioContext && audioContext.state === 'suspended') {
+                        audioContext.resume();
+                    }
+                }).catch(e => {
+                    console.error('Playback failed:', e);
+                    alert('Playback failed. Please ensure you have selected valid audio files.');
+                });
             }
         }
 
@@ -875,7 +942,11 @@
             
             loadTrack(currentTrack);
             if (isPlaying) {
-                audioPlayer.play();
+                audioPlayer.play().catch(e => {
+                    console.error('Playback failed:', e);
+                    isPlaying = false;
+                    document.getElementById('playPause').innerHTML = '<i class="fas fa-play"></i>';
+                });
             }
         }
 
@@ -885,7 +956,11 @@
             currentTrack = (currentTrack - 1 + musicFiles.length) % musicFiles.length;
             loadTrack(currentTrack);
             if (isPlaying) {
-                audioPlayer.play();
+                audioPlayer.play().catch(e => {
+                    console.error('Playback failed:', e);
+                    isPlaying = false;
+                    document.getElementById('playPause').innerHTML = '<i class="fas fa-play"></i>';
+                });
             }
         }
 
@@ -1320,13 +1395,6 @@
             }
         });
 
-        // Prevent default touch behaviors that might interfere with the app
-        document.addEventListener('touchstart', function(e) {
-            if (e.touches.length > 1) {
-                e.preventDefault();
-            }
-        });
-
         // Initialize volume
         audioPlayer.volume = 0.7;
 
@@ -1359,11 +1427,52 @@
             
             alert(message);
         }
-        function openMusicPlayer() {
-            window.open('music-player.html', '_blank'); // open in new tab
-            // OR use: window.location.href = 'music-player.html'; to open in same tab
-        }
-
     </script>
+
+<div class="music-controls">
+  <h2>🎵 Select Music Folder</h2>
+  <input type="file" id="folderInput" webkitdirectory multiple />
+  <audio id="audioPlayer" controls></audio>
+</div>
+
+<div class="time-selector">
+  <label for="viewSelect">🕒 View:</label>
+  <select id="viewSelect">
+    <option value="daily">Daily</option>
+    <option value="weekly">Weekly</option>
+    <option value="monthly">Monthly</option>
+    <option value="yearly">Yearly</option>
+    <option value="lifetime">Lifetime</option>
+  </select>
+</div>
+
+
+<script>
+let audioFiles = [];
+let currentTrack = 0;
+let isShuffle = true;  // shuffle ON by default
+
+document.getElementById("folderInput").addEventListener("change", function(event) {
+    audioFiles = Array.from(event.target.files);
+    if (isShuffle) {
+        audioFiles = audioFiles.sort(() => Math.random() - 0.5);
+    }
+    currentTrack = 0;
+    playCurrentTrack();
+});
+
+function playCurrentTrack() {
+    if (!audioFiles.length) return;
+    const audio = document.getElementById("audioPlayer");
+    audio.src = URL.createObjectURL(audioFiles[currentTrack]);
+    audio.play();
+}
+
+document.getElementById("audioPlayer").addEventListener("ended", () => {
+    currentTrack = (currentTrack + 1) % audioFiles.length;
+    playCurrentTrack();
+});
+</script>
+
 </body>
 </html>

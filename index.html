@@ -860,7 +860,8 @@
             const fileInput = document.createElement('input');
             fileInput.type = 'file';
             fileInput.multiple = true;
-            fileInput.accept = 'audio/*';
+            fileInput.accept = '*/*';
+            fileInput.removeAttribute('capture');
             
             fileInput.onchange = (e) => {
                 const files = Array.from(e.target.files);

@@ -1,0 +1,1363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yogi - Yoga Pocket Diary</title>
+    <link rel="stylesheet" href="#styles">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Welcome Screen -->
+    <div id="welcomeScreen" class="screen active">
+        <div class="welcome-container">
+            <div class="welcome-animation">
+                <i class="fas fa-lotus"></i>
+            </div>
+            <img src="./baba.png" alt="baba">
+            <h1 class="welcome-title">Welcome to Yogi</h1>
+            <p class="welcome-subtitle">Your Personal Yoga Journey Begins</p>
+            <div class="welcome-quote">
+                <p>"Yoga is a light, which once lit will never dim. The better your practice, the brighter your flame."</p>
+            </div>
+            <button id="enterApp" class="welcome-btn">
+                <span>Begin Your Journey</span>
+                <i class="fas fa-arrow-right"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Main App Screen -->
+    <div id="mainScreen" class="screen">
+        <header class="app-header">
+            <div class="logo-section">
+                <div class="logo-placeholder">
+                    <i class="fas fa-om"></i>
+                </div>
+                <div class="om-text">ॐ शान्ति</div>
+            </div>
+            <h1 class="app-title">Yogi</h1>
+            <p class="app-subtitle">Yoga Pocket Diary</p>
+        </header>
+
+        <!-- Stats Display -->
+        <div class="stats-container">
+            <div class="current-session">
+                <h3>Current Session</h3>
+                <div class="timer-display" id="currentTimer">00:00:00</div>
+                <div class="session-status" id="sessionStatus">Ready to start</div>
+            </div>
+            
+            <div class="stats-grid">
+                <div class="stat-card" onclick="showStatsModal('today')">
+                    <i class="fas fa-calendar-day"></i>
+                    <span class="stat-value" id="todayTime">0m</span>
+                    <span class="stat-label">Today</span>
+                </div>
+                <div class="stat-card" onclick="showStatsModal('week')">
+                    <i class="fas fa-calendar-week"></i>
+                    <span class="stat-value" id="weekTime">0m</span>
+                    <span class="stat-label">This Week</span>
+                </div>
+                <div class="stat-card" onclick="showStatsModal('month')">
+                    <i class="fas fa-calendar-alt"></i>
+                    <span class="stat-value" id="monthTime">0m</span>
+                    <span class="stat-label">This Month</span>
+                </div>
+                <div class="stat-card" onclick="showStatsModal('year')">
+                    <i class="fas fa-calendar"></i>
+                    <span class="stat-value" id="yearTime">0m</span>
+                    <span class="stat-label">This Year</span>
+                </div>
+                <div class="stat-card lifetime" onclick="showStatsModal('lifetime')">
+                    <i class="fas fa-infinity"></i>
+                    <span class="stat-value" id="lifetimeTime">0m</span>
+                    <span class="stat-label">Lifetime</span>
+                </div>
+            </div>
+            
+            <!-- Debug Panel (remove in production) -->
+            <div class="debug-panel">
+                <button onclick="clearAllData()" style="background: #f44336; color: white; border: none; padding: 8px 15px; border-radius: 5px; margin: 5px;">Clear All Data</button>
+                <button onclick="addTestSession()" style="background: #4CAF50; color: white; border: none; padding: 8px 15px; border-radius: 5px; margin: 5px;">Add Test Session</button>
+                <button onclick="showAllSessions()" style="background: #2196F3; color: white; border: none; padding: 8px 15px; border-radius: 5px; margin: 5px;">Show All Sessions</button>
+            </div>
+        </div>
+
+        <!-- Music Section -->
+        <div class="music-section">
+            <h3><i class="fas fa-music"></i> Music Player</h3>
+            <div class="music-controls">
+                <input type="file" id="musicFiles" multiple accept="audio/*" style="display: none;">
+                <button id="loadMusic" class="control-btn">
+                    <i class="fas fa-folder-open"></i>
+                    Load Music
+                </button>
+                <div class="music-info" id="musicInfo">
+                    <div class="track-name" id="trackName">No music loaded</div>
+                    <div class="track-progress">
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="progressFill"></div>
+                        </div>
+                        <span class="time-display">
+                            <span id="currentTime">0:00</span> / <span id="totalTime">0:00</span>
+                        </span>
+                    </div>
+                </div>
+                <div class="player-controls">
+                    <button id="prevTrack" class="control-btn">
+                        <i class="fas fa-step-backward"></i>
+                    </button>
+                    <button id="playPause" class="control-btn primary">
+                        <i class="fas fa-play"></i>
+                    </button>
+                    <button id="nextTrack" class="control-btn">
+                        <i class="fas fa-step-forward"></i>
+                    </button>
+                    <button id="shuffle" class="control-btn">
+                        <i class="fas fa-random"></i>
+                    </button>
+                </div>
+                <div class="volume-control">
+                    <i class="fas fa-volume-down"></i>
+                    <input type="range" id="volumeSlider" min="0" max="100" value="70">
+                    <i class="fas fa-volume-up"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Timer Section -->
+        <div class="timer-section">
+            <h3><i class="fas fa-stopwatch"></i> Yoga Timer</h3>
+            
+            <!-- Preset Timer -->
+            <div class="preset-timer">
+                <label for="presetMinutes">Set Timer (minutes):</label>
+                <div class="preset-controls">
+                    <input type="number" id="presetMinutes" min="1" max="180" value="20" placeholder="20">
+                    <button id="setPreset" class="control-btn">Set Timer</button>
+                </div>
+                <div class="preset-display" id="presetDisplay">Timer: Not Set</div>
+            </div>
+
+            <div class="main-controls">
+                <button id="startYoga" class="yoga-btn start">
+                    <i class="fas fa-play-circle"></i>
+                    Start Yoga
+                </button>
+                <button id="pauseYoga" class="yoga-btn pause" style="display: none;">
+                    <i class="fas fa-pause-circle"></i>
+                    Pause
+                </button>
+                <button id="endYoga" class="yoga-btn end" style="display: none;">
+                    <i class="fas fa-stop-circle"></i>
+                    End Session
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Modal -->
+    <div id="statsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle">Statistics</h3>
+                <button class="close-modal" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body" id="modalBody">
+                <!-- Stats details will be populated here -->
+            </div>
+        </div>
+    </div>
+
+    <audio id="audioPlayer" preload="metadata"></audio>
+
+    <style id="styles">
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+            overflow-x: hidden;
+        }
+
+        .screen {
+            display: none;
+            min-height: 100vh;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        /* Welcome Screen Styles */
+        .welcome-container {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            text-align: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .welcome-animation {
+            font-size: 4rem;
+            margin-bottom: 2rem;
+            animation: lotus-glow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes lotus-glow {
+            from { 
+                transform: scale(1);
+                filter: drop-shadow(0 0 10px rgba(255,255,255,0.5));
+            }
+            to { 
+                transform: scale(1.1);
+                filter: drop-shadow(0 0 20px rgba(255,255,255,0.8));
+            }
+        }
+
+        .welcome-title {
+            font-size: 3rem;
+            font-weight: 300;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(45deg, #FFD700, #FFA500);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .welcome-subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            margin-bottom: 2rem;
+        }
+
+        .welcome-quote {
+            max-width: 300px;
+            font-style: italic;
+            opacity: 0.8;
+            margin-bottom: 3rem;
+            line-height: 1.6;
+        }
+
+        .welcome-btn {
+            background: linear-gradient(45deg, #FFD700, #FFA500);
+            color: #333;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .welcome-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+
+        /* Main App Styles */
+        .app-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 10px;
+        }
+
+        .logo-placeholder {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(45deg, #FFD700, #FFA500);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: #333;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .om-text {
+            font-size: 1.5rem;
+            font-weight: 300;
+            color: #FFD700;
+        }
+
+        .app-title {
+            font-size: 2.5rem;
+            font-weight: 300;
+            margin: 0;
+        }
+
+        .app-subtitle {
+            opacity: 0.9;
+            font-size: 1rem;
+            margin-top: 5px;
+        }
+
+        /* Stats Container */
+        .stats-container {
+            padding: 20px;
+            background: white;
+            margin: 20px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .current-session {
+            text-align: center;
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .current-session h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 1.2rem;
+        }
+
+        .timer-display {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #333;
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .session-status {
+            margin-top: 10px;
+            color: #666;
+            font-style: italic;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #f8f9ff, #e8edff);
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.2);
+            border-color: #667eea;
+        }
+
+        .stat-card.lifetime {
+            grid-column: 1 / -1;
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            color: white;
+        }
+
+        .stat-card i {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+            color: #667eea;
+        }
+
+        .stat-card.lifetime i {
+            color: white;
+        }
+
+        .stat-value {
+            display: block;
+            font-size: 1.8rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        /* Music Section */
+        .music-section, .timer-section {
+            background: white;
+            margin: 20px;
+            padding: 25px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .music-section h3, .timer-section h3 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 1.3rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .music-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .control-btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .control-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .control-btn.primary {
+            background: linear-gradient(45deg, #FFD700, #FFA500);
+            color: #333;
+        }
+
+        .music-info {
+            background: #f8f9ff;
+            padding: 15px;
+            border-radius: 15px;
+            text-align: center;
+        }
+
+        .track-name {
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .track-progress {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .progress-bar {
+            background: #e0e0e0;
+            height: 6px;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            height: 100%;
+            width: 0%;
+            transition: width 0.1s ease;
+        }
+
+        .time-display {
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .player-controls {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .volume-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #f8f9ff;
+            padding: 10px 15px;
+            border-radius: 15px;
+        }
+
+        .volume-control input[type="range"] {
+            flex: 1;
+            height: 6px;
+            background: #e0e0e0;
+            border-radius: 3px;
+            outline: none;
+        }
+
+        /* Preset Timer */
+        .preset-timer {
+            background: #f8f9ff;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+        }
+
+        .preset-timer label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        .preset-controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .preset-controls input {
+            flex: 1;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1rem;
+        }
+
+        .preset-controls input:focus {
+            border-color: #667eea;
+            outline: none;
+        }
+
+        .preset-display {
+            color: #666;
+            font-weight: 600;
+        }
+
+        .main-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .yoga-btn {
+            padding: 18px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .yoga-btn.start {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            color: white;
+        }
+
+        .yoga-btn.pause {
+            background: linear-gradient(45deg, #FF9800, #F57C00);
+            color: white;
+        }
+
+        .yoga-btn.end {
+            background: linear-gradient(45deg, #f44336, #d32f2f);
+            color: white;
+        }
+
+        .yoga-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background: white;
+            margin: 10% auto;
+            width: 90%;
+            max-width: 500px;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            padding: 25px;
+            border-bottom: 2px solid #f0f0f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border-radius: 20px 20px 0 0;
+        }
+
+        .modal-header h3 {
+            margin: 0;
+            font-size: 1.5rem;
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 2rem;
+            color: white;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.3s ease;
+        }
+
+        .close-modal:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        .modal-body {
+            padding: 25px;
+        }
+
+        /* Debug Panel Styles */
+        .debug-panel {
+            background: #f0f0f0;
+            padding: 15px;
+            margin: 20px;
+            border-radius: 10px;
+            text-align: center;
+            border: 1px dashed #ccc;
+        }
+
+        .debug-panel button {
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+
+        .debug-panel button:hover {
+            transform: translateY(-2px);
+        }
+        @media (max-width: 768px) {
+            .welcome-title {
+                font-size: 2.5rem;
+            }
+            
+            .app-title {
+                font-size: 2rem;
+            }
+            
+            .timer-display {
+                font-size: 2rem;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .stat-card.lifetime {
+                grid-column: 1;
+            }
+            
+            .preset-controls {
+                flex-direction: column;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .stats-container, .music-section, .timer-section {
+                margin: 10px;
+                padding: 15px;
+            }
+            
+            .welcome-container {
+                padding: 15px;
+            }
+            
+            .modal-content {
+                margin: 5% auto;
+                width: 95%;
+            }
+        }
+
+        /* Keep screen awake styles */
+        .keep-awake-indicator {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: rgba(76, 175, 80, 0.9);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            z-index: 100;
+            display: none;
+        }
+
+        .keep-awake-indicator.active {
+            display: block;
+        }
+    </style>
+
+    <script>
+        // Wake Lock API for preventing sleep
+        let wakeLock = null;
+
+        // App State
+        let currentTrack = 0;
+        let musicFiles = [];
+        let isPlaying = false;
+        let isShuffling = false;
+        let yogaStartTime = null;
+        let yogaTimer = null;
+        let currentSessionTime = 0;
+        let presetTimerMinutes = 0;
+        let presetTimer = null;
+        let isPaused = false;
+        let pausedTime = 0;
+
+        // Audio element
+        const audioPlayer = document.getElementById('audioPlayer');
+
+        // Initialize app
+        document.addEventListener('DOMContentLoaded', function() {
+            loadStoredData();
+            updateAllStats();
+            
+            // Event listeners
+            document.getElementById('enterApp').addEventListener('click', enterMainApp);
+            document.getElementById('loadMusic').addEventListener('click', () => document.getElementById('musicFiles').click());
+            document.getElementById('musicFiles').addEventListener('change', loadMusicFiles);
+            document.getElementById('playPause').addEventListener('click', togglePlayPause);
+            document.getElementById('nextTrack').addEventListener('click', nextTrack);
+            document.getElementById('prevTrack').addEventListener('click', prevTrack);
+            document.getElementById('shuffle').addEventListener('click', toggleShuffle);
+            document.getElementById('volumeSlider').addEventListener('input', setVolume);
+            document.getElementById('setPreset').addEventListener('click', setPresetTimer);
+            document.getElementById('startYoga').addEventListener('click', startYogaSession);
+            document.getElementById('pauseYoga').addEventListener('click', pauseYogaSession);
+            document.getElementById('endYoga').addEventListener('click', endYogaSession);
+
+            // Audio player events
+            audioPlayer.addEventListener('loadedmetadata', updateTrackInfo);
+            audioPlayer.addEventListener('timeupdate', updateProgress);
+            audioPlayer.addEventListener('ended', nextTrack);
+
+            // Request wake lock on load
+            requestWakeLock();
+        });
+
+        async function requestWakeLock() {
+            try {
+                if ('wakeLock' in navigator) {
+                    wakeLock = await navigator.wakeLock.request('screen');
+                    console.log('Wake lock acquired');
+                    
+                    // Add visual indicator
+                    const indicator = document.createElement('div');
+                    indicator.className = 'keep-awake-indicator active';
+                    indicator.innerHTML = '<i class="fas fa-eye"></i> Screen Stay Awake';
+                    document.body.appendChild(indicator);
+                }
+            } catch (err) {
+                console.log('Wake lock failed:', err);
+                // Fallback: prevent sleep using video element trick
+                preventSleepFallback();
+            }
+        }
+
+        function preventSleepFallback() {
+            // Create invisible video to prevent sleep
+            const video = document.createElement('video');
+            video.src = 'data:video/mp4;base64,AAAAHGZ0eXBtcDQyAAACAEFhdGFhAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=';
+            video.loop = true;
+            video.muted = true;
+            video.style.opacity = '0';
+            video.style.position = 'absolute';
+            video.style.zIndex = '-1000';
+            document.body.appendChild(video);
+            video.play();
+        }
+
+        function enterMainApp() {
+            document.getElementById('welcomeScreen').classList.remove('active');
+            document.getElementById('mainScreen').classList.add('active');
+        }
+
+        function loadMusicFiles(event) {
+            const files = Array.from(event.target.files);
+            musicFiles = files.filter(file => file.type.startsWith('audio/'));
+            
+            if (musicFiles.length > 0) {
+                loadTrack(0);
+                document.getElementById('trackName').textContent = `${musicFiles.length} songs loaded`;
+            }
+        }
+
+        function loadTrack(trackIndex) {
+            if (musicFiles.length === 0) return;
+            
+            currentTrack = trackIndex;
+            const file = musicFiles[currentTrack];
+            const url = URL.createObjectURL(file);
+            audioPlayer.src = url;
+            
+            document.getElementById('trackName').textContent = file.name.replace(/\.[^/.]+$/, "");
+        }
+
+        function togglePlayPause() {
+            if (musicFiles.length === 0) {
+                alert('Please load music files first');
+                return;
+            }
+
+            if (isPlaying) {
+                audioPlayer.pause();
+                document.getElementById('playPause').innerHTML = '<i class="fas fa-play"></i>';
+                isPlaying = false;
+            } else {
+                audioPlayer.play();
+                document.getElementById('playPause').innerHTML = '<i class="fas fa-pause"></i>';
+                isPlaying = true;
+            }
+        }
+
+        function nextTrack() {
+            if (musicFiles.length === 0) return;
+            
+            if (isShuffling) {
+                currentTrack = Math.floor(Math.random() * musicFiles.length);
+            } else {
+                currentTrack = (currentTrack + 1) % musicFiles.length;
+            }
+            
+            loadTrack(currentTrack);
+            if (isPlaying) {
+                audioPlayer.play();
+            }
+        }
+
+        function prevTrack() {
+            if (musicFiles.length === 0) return;
+            
+            currentTrack = (currentTrack - 1 + musicFiles.length) % musicFiles.length;
+            loadTrack(currentTrack);
+            if (isPlaying) {
+                audioPlayer.play();
+            }
+        }
+
+        function toggleShuffle() {
+            isShuffling = !isShuffling;
+            const shuffleBtn = document.getElementById('shuffle');
+            if (isShuffling) {
+                shuffleBtn.style.background = 'linear-gradient(45deg, #FFD700, #FFA500)';
+                shuffleBtn.style.color = '#333';
+            } else {
+                shuffleBtn.style.background = 'linear-gradient(45deg, #667eea, #764ba2)';
+                shuffleBtn.style.color = 'white';
+            }
+        }
+
+        function setVolume() {
+            const volume = document.getElementById('volumeSlider').value / 100;
+            audioPlayer.volume = volume;
+        }
+
+        function updateTrackInfo() {
+            const duration = formatTime(audioPlayer.duration);
+            document.getElementById('totalTime').textContent = duration;
+        }
+
+        function updateProgress() {
+            const current = formatTime(audioPlayer.currentTime);
+            const progress = (audioPlayer.currentTime / audioPlayer.duration) * 100;
+            
+            document.getElementById('currentTime').textContent = current;
+            document.getElementById('progressFill').style.width = progress + '%';
+        }
+
+        function setPresetTimer() {
+            const minutes = parseInt(document.getElementById('presetMinutes').value);
+            if (minutes > 0) {
+                presetTimerMinutes = minutes;
+                document.getElementById('presetDisplay').textContent = `Timer: ${minutes} minutes`;
+            }
+        }
+
+        function startYogaSession() {
+            yogaStartTime = Date.now();
+            isPaused = false;
+            pausedTime = 0;
+            
+            yogaTimer = setInterval(updateCurrentTimer, 1000);
+            
+            // Set preset timer if configured
+            if (presetTimerMinutes > 0) {
+                presetTimer = setTimeout(() => {
+                    endYogaSession();
+                }, presetTimerMinutes * 60 * 1000);
+            }
+            
+            document.getElementById('startYoga').style.display = 'none';
+            document.getElementById('pauseYoga').style.display = 'block';
+            document.getElementById('endYoga').style.display = 'block';
+            document.getElementById('sessionStatus').textContent = 'Yoga session in progress...';
+        }
+
+        function pauseYogaSession() {
+            if (!isPaused) {
+                // Pause
+                clearInterval(yogaTimer);
+                pausedTime += Date.now() - yogaStartTime;
+                isPaused = true;
+                document.getElementById('pauseYoga').innerHTML = '<i class="fas fa-play-circle"></i> Resume';
+                document.getElementById('sessionStatus').textContent = 'Session paused';
+            } else {
+                // Resume
+                yogaStartTime = Date.now();
+                yogaTimer = setInterval(updateCurrentTimer, 1000);
+                isPaused = false;
+                document.getElementById('pauseYoga').innerHTML = '<i class="fas fa-pause-circle"></i> Pause';
+                document.getElementById('sessionStatus').textContent = 'Yoga session in progress...';
+            }
+        }
+
+        function endYogaSession() {
+            clearInterval(yogaTimer);
+            if (presetTimer) {
+                clearTimeout(presetTimer);
+                presetTimer = null;
+            }
+
+            // Calculate total session time
+            let totalTime;
+            if (isPaused) {
+                totalTime = pausedTime;
+            } else {
+                totalTime = pausedTime + (Date.now() - yogaStartTime);
+            }
+
+            const sessionMinutes = Math.floor(totalTime / (1000 * 60));
+            
+            if (sessionMinutes > 0) {
+                saveYogaSession(sessionMinutes);
+                alert(`Great session! You practiced yoga for ${sessionMinutes} minutes.`);
+            }
+
+            // Stop music
+            if (isPlaying) {
+                audioPlayer.pause();
+                document.getElementById('playPause').innerHTML = '<i class="fas fa-play"></i>';
+                isPlaying = false;
+            }
+
+            // Reset UI
+            document.getElementById('startYoga').style.display = 'block';
+            document.getElementById('pauseYoga').style.display = 'none';
+            document.getElementById('endYoga').style.display = 'none';
+            document.getElementById('currentTimer').textContent = '00:00:00';
+            document.getElementById('sessionStatus').textContent = 'Ready to start';
+            
+            currentSessionTime = 0;
+            yogaStartTime = null;
+            isPaused = false;
+            pausedTime = 0;
+
+            updateAllStats();
+        }
+
+        function updateCurrentTimer() {
+            let currentTime;
+            if (isPaused) {
+                currentTime = pausedTime;
+            } else {
+                currentTime = pausedTime + (Date.now() - yogaStartTime);
+            }
+            
+            const hours = Math.floor(currentTime / (1000 * 60 * 60));
+            const minutes = Math.floor((currentTime % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((currentTime % (1000 * 60)) / 1000);
+            
+            document.getElementById('currentTimer').textContent = 
+                `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+
+        function saveYogaSession(minutes) {
+            const today = new Date().toDateString();
+            
+            // Get existing sessions or create empty array
+            let sessions = [];
+            try {
+                const stored = localStorage.getItem('yogaSessions');
+                if (stored) {
+                    sessions = JSON.parse(stored);
+                }
+            } catch (e) {
+                console.log('Error loading sessions:', e);
+                sessions = [];
+            }
+            
+            // Add new session
+            const newSession = {
+                date: today,
+                timestamp: Date.now(),
+                minutes: minutes,
+                readableDate: new Date().toLocaleString()
+            };
+            
+            sessions.push(newSession);
+            
+            // Save to localStorage
+            try {
+                localStorage.setItem('yogaSessions', JSON.stringify(sessions));
+                console.log('Session saved:', newSession);
+                
+                // Show confirmation
+                showSessionSaved(minutes);
+            } catch (e) {
+                console.error('Error saving session:', e);
+                alert('Error saving session data. Please check your browser storage settings.');
+            }
+        }
+
+        function loadStoredData() {
+            // Load existing sessions from localStorage
+            try {
+                const stored = localStorage.getItem('yogaSessions');
+                if (stored) {
+                    const sessions = JSON.parse(stored);
+                    console.log('Loaded sessions:', sessions.length, 'total sessions');
+                    return sessions;
+                }
+            } catch (e) {
+                console.error('Error loading stored data:', e);
+            }
+            return [];
+        }
+
+        function updateAllStats() {
+            const sessions = loadStoredData();
+            const now = new Date();
+            
+            console.log('Updating stats with', sessions.length, 'sessions');
+            
+            // Today
+            const today = now.toDateString();
+            const todayMinutes = sessions
+                .filter(session => session.date === today)
+                .reduce((sum, session) => sum + session.minutes, 0);
+            document.getElementById('todayTime').textContent = formatDisplayTime(todayMinutes);
+            console.log('Today minutes:', todayMinutes);
+            
+            // This week
+            const weekStart = new Date(now);
+            weekStart.setDate(now.getDate() - now.getDay());
+            weekStart.setHours(0, 0, 0, 0);
+            const weekMinutes = sessions
+                .filter(session => new Date(session.timestamp) >= weekStart)
+                .reduce((sum, session) => sum + session.minutes, 0);
+            document.getElementById('weekTime').textContent = formatDisplayTime(weekMinutes);
+            console.log('Week minutes:', weekMinutes);
+            
+            // This month
+            const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+            const monthMinutes = sessions
+                .filter(session => new Date(session.timestamp) >= monthStart)
+                .reduce((sum, session) => sum + session.minutes, 0);
+            document.getElementById('monthTime').textContent = formatDisplayTime(monthMinutes);
+            console.log('Month minutes:', monthMinutes);
+            
+            // This year
+            const yearStart = new Date(now.getFullYear(), 0, 1);
+            const yearMinutes = sessions
+                .filter(session => new Date(session.timestamp) >= yearStart)
+                .reduce((sum, session) => sum + session.minutes, 0);
+            document.getElementById('yearTime').textContent = formatDisplayTime(yearMinutes);
+            console.log('Year minutes:', yearMinutes);
+            
+            // Lifetime
+            const lifetimeMinutes = sessions.reduce((sum, session) => sum + session.minutes, 0);
+            document.getElementById('lifetimeTime').textContent = formatDisplayTime(lifetimeMinutes);
+            console.log('Lifetime minutes:', lifetimeMinutes);
+            
+            // Update display message if no data
+            if (lifetimeMinutes === 0) {
+                document.getElementById('sessionStatus').textContent = 'No yoga sessions recorded yet. Start your first session!';
+            }
+        }
+
+        function formatDisplayTime(minutes) {
+            if (minutes < 60) {
+                return minutes + 'm';
+            } else {
+                const hours = Math.floor(minutes / 60);
+                const remainingMinutes = minutes % 60;
+                if (remainingMinutes === 0) {
+                    return hours + 'h';
+                } else {
+                    return hours + 'h ' + remainingMinutes + 'm';
+                }
+            }
+        }
+
+        function formatTime(seconds) {
+            if (isNaN(seconds)) return '0:00';
+            const minutes = Math.floor(seconds / 60);
+            const remainingSeconds = Math.floor(seconds % 60);
+            return minutes + ':' + remainingSeconds.toString().padStart(2, '0');
+        }
+
+        function showStatsModal(period) {
+            const sessions = loadStoredData();
+            const modal = document.getElementById('statsModal');
+            const modalTitle = document.getElementById('modalTitle');
+            const modalBody = document.getElementById('modalBody');
+            
+            let filteredSessions = [];
+            let title = '';
+            const now = new Date();
+            
+            switch(period) {
+                case 'today':
+                    title = 'Today\'s Sessions';
+                    const today = now.toDateString();
+                    filteredSessions = sessions.filter(session => session.date === today);
+                    break;
+                    
+                case 'week':
+                    title = 'This Week\'s Sessions';
+                    const weekStart = new Date(now);
+                    weekStart.setDate(now.getDate() - now.getDay());
+                    weekStart.setHours(0, 0, 0, 0);
+                    filteredSessions = sessions.filter(session => new Date(session.timestamp) >= weekStart);
+                    break;
+                    
+                case 'month':
+                    title = 'This Month\'s Sessions';
+                    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+                    filteredSessions = sessions.filter(session => new Date(session.timestamp) >= monthStart);
+                    break;
+                    
+                case 'year':
+                    title = 'This Year\'s Sessions';
+                    const yearStart = new Date(now.getFullYear(), 0, 1);
+                    filteredSessions = sessions.filter(session => new Date(session.timestamp) >= yearStart);
+                    break;
+                    
+                case 'lifetime':
+                    title = 'All Time Sessions';
+                    filteredSessions = sessions;
+                    break;
+            }
+            
+            modalTitle.textContent = title;
+            
+            if (filteredSessions.length === 0) {
+                modalBody.innerHTML = '<p style="text-align: center; color: #666; font-style: italic;">No sessions recorded yet. Start your yoga journey!</p>';
+            } else {
+                const totalMinutes = filteredSessions.reduce((sum, session) => sum + session.minutes, 0);
+                const totalSessions = filteredSessions.length;
+                const averageSession = Math.round(totalMinutes / totalSessions);
+                
+                let html = `
+                    <div style="background: #f8f9ff; padding: 20px; border-radius: 15px; margin-bottom: 20px;">
+                        <h4 style="color: #667eea; margin-bottom: 15px;">Summary</h4>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 15px;">
+                            <div style="text-align: center;">
+                                <div style="font-size: 1.5rem; font-weight: bold; color: #333;">${totalSessions}</div>
+                                <div style="font-size: 0.9rem; color: #666;">Sessions</div>
+                            </div>
+                            <div style="text-align: center;">
+                                <div style="font-size: 1.5rem; font-weight: bold; color: #333;">${formatDisplayTime(totalMinutes)}</div>
+                                <div style="font-size: 0.9rem; color: #666;">Total Time</div>
+                            </div>
+                            <div style="text-align: center;">
+                                <div style="font-size: 1.5rem; font-weight: bold; color: #333;">${averageSession}m</div>
+                                <div style="font-size: 0.9rem; color: #666;">Average</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                // Group sessions by date
+                const sessionsByDate = {};
+                filteredSessions.forEach(session => {
+                    if (!sessionsByDate[session.date]) {
+                        sessionsByDate[session.date] = [];
+                    }
+                    sessionsByDate[session.date].push(session);
+                });
+                
+                html += '<div style="max-height: 300px; overflow-y: auto;">';
+                
+                Object.keys(sessionsByDate)
+                    .sort((a, b) => new Date(b) - new Date(a))
+                    .forEach(date => {
+                        const dateSessions = sessionsByDate[date];
+                        const dayTotal = dateSessions.reduce((sum, session) => sum + session.minutes, 0);
+                        
+                        html += `
+                            <div style="margin-bottom: 15px; padding: 15px; background: white; border-radius: 10px; border-left: 4px solid #667eea;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                                    <strong>${new Date(date).toLocaleDateString()}</strong>
+                                    <span style="color: #667eea; font-weight: bold;">${formatDisplayTime(dayTotal)}</span>
+                                </div>
+                                <div style="font-size: 0.9rem; color: #666;">
+                                    ${dateSessions.length} session${dateSessions.length > 1 ? 's' : ''}: ${dateSessions.map(s => s.minutes + 'm').join(', ')}
+                                </div>
+                            </div>
+                        `;
+                    });
+                
+                html += '</div>';
+                modalBody.innerHTML = html;
+            }
+            
+            modal.style.display = 'block';
+        }
+
+        function closeModal() {
+            document.getElementById('statsModal').style.display = 'none';
+        }
+
+        function showSessionSaved(minutes) {
+            // Create a temporary notification
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: linear-gradient(45deg, #4CAF50, #45a049);
+                color: white;
+                padding: 15px 25px;
+                border-radius: 25px;
+                z-index: 1001;
+                font-weight: bold;
+                box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+                animation: slideDown 0.3s ease-out;
+            `;
+            notification.innerHTML = `✅ Session Saved: ${minutes} minutes!`;
+            document.body.appendChild(notification);
+            
+            // Remove notification after 3 seconds
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+
+        // Add animation for notification
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideDown {
+                from {
+                    transform: translateX(-50%) translateY(-100%);
+                    opacity: 0;
+                }
+                to {
+                    transform: translateX(-50%) translateY(0);
+                    opacity: 1;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('statsModal');
+            if (event.target === modal) {
+                closeModal();
+            }
+        }
+
+        // Handle visibility change to maintain wake lock
+        document.addEventListener('visibilitychange', () => {
+            if (wakeLock !== null && document.visibilityState === 'visible') {
+                requestWakeLock();
+            }
+        });
+
+        // Prevent default touch behaviors that might interfere with the app
+        document.addEventListener('touchstart', function(e) {
+            if (e.touches.length > 1) {
+                e.preventDefault();
+            }
+        });
+
+        // Initialize volume
+        audioPlayer.volume = 0.7;
+
+        // Debug functions for testing
+        function clearAllData() {
+            if (confirm('Are you sure you want to clear all yoga session data?')) {
+                localStorage.removeItem('yogaSessions');
+                updateAllStats();
+                alert('All data cleared!');
+            }
+        }
+
+        function addTestSession() {
+            const minutes = Math.floor(Math.random() * 60) + 5; // Random between 5-65 minutes
+            saveYogaSession(minutes);
+            updateAllStats();
+        }
+
+        function showAllSessions() {
+            const sessions = loadStoredData();
+            if (sessions.length === 0) {
+                alert('No sessions found in storage.');
+                return;
+            }
+            
+            let message = `Found ${sessions.length} sessions:\n\n`;
+            sessions.forEach((session, index) => {
+                message += `${index + 1}. ${session.readableDate || new Date(session.timestamp).toLocaleString()}\n   Duration: ${session.minutes} minutes\n\n`;
+            });
+            
+            alert(message);
+        }
+    </script>
+</body>
+</html>
